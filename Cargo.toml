@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ratatui = "0.25.0"
-anyhow = "1.0.75"
 smplr-rs = {path = "../smplr-rs"}
 pulseaudio-simple-device = {path = "../pulseaudio-simple-device"}
+ratatui = "0.25.0"
 crossterm = "0.27.0"
+color-eyre = "0.6.2"
