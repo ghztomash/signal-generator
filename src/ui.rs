@@ -18,7 +18,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let sub_area = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),
+            Constraint::Length(1),
             Constraint::Min(1),
             Constraint::Length(3),
         ])
@@ -60,14 +60,8 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 }
 
 fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
-    let tab_titles = vec!["Tab1", "Tab2", "Tab3", "Tab4"];
+    let tab_titles = vec!["Channel A", "Channel B", "Output", "Tab4"];
     Tabs::new(tab_titles)
-        .block(
-            Block::default()
-                .title("Tabs")
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
-        )
         .style(Style::default())
         .highlight_style(Style::default().fg(Color::Green))
         .select(app.tab_index)
