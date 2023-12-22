@@ -3,8 +3,8 @@ use ratatui::{
     prelude::{Alignment, Frame, Marker},
     style::{Color, Style, Stylize},
     widgets::{
-        Axis, Block, BorderType, Borders, Chart, Clear, Dataset, GraphType, Paragraph, Sparkline,
-        Tabs,
+        canvas::*, Axis, Block, BorderType, Borders, Chart, Clear, Dataset, GraphType, Paragraph,
+        Sparkline, Tabs, Widget,
     },
 };
 
@@ -54,17 +54,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         sub_area[1],
     );
 
-    let sparkline = Sparkline::default()
-        .block(
-            Block::default()
-                .title("Sparkline")
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
-        )
-        .data(&[0, 2, 3, 4, 1, 4, 10, 4, 3, 2, 4, 5, 6, 7, 8, 9, 10])
-        .max(10)
-        .style(Style::default().red().on_white());
-    frame.render_widget(sparkline, main_sub_area[0]);
+    frame.render_widget(make_preview_canvas(), main_sub_area[0]);
 
     frame.render_widget(make_chart(), main_sub_area[1]);
 
@@ -97,6 +87,26 @@ fn make_tab_bar(app: &mut App) -> Tabs<'static> {
         .highlight_style(Style::default().fg(Color::Green))
         .select(app.tab_index);
     tabs
+}
+
+fn make_preview_canvas() -> impl Widget + 'static {
+    Canvas::default()
+        .block(
+            Block::default()
+                .title("Canvas")
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded),
+        )
+        .marker(Marker::Braille)
+        .paint(|ctx| {
+            ctx.draw(&Map {
+                color: Color::Green,
+                resolution: MapResolution::High,
+            });
+            ctx.print(10.0, 10.0, "You are here".yellow());
+        })
+        .x_bounds([-180.0, 180.0])
+        .y_bounds([-90.0, 90.0])
 }
 
 fn make_chart() -> Chart<'static> {
