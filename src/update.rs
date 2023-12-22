@@ -9,6 +9,12 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
                 app.quit();
             }
         }
+        KeyCode::Tab => app.next_tab(),
+        KeyCode::BackTab => app.previous_tab(),
+        KeyCode::Char('1') => app.set_tab(0),
+        KeyCode::Char('2') => app.set_tab(1),
+        KeyCode::Char('3') => app.set_tab(2),
+        KeyCode::Char('4') => app.set_tab(3),
         _ => {}
     };
 }

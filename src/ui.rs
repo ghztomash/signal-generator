@@ -26,7 +26,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let sub_area = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1),
+            Constraint::Length(3),
             Constraint::Min(1),
             Constraint::Length(3),
         ])
@@ -35,17 +35,24 @@ pub fn render(app: &mut App, frame: &mut Frame) {
             vertical: 1,
         }));
 
-    let tabs = Tabs::new(vec!["Tab1", "Tab2", "Tab3", "Tab4"])
-        //.block(Block::default().title("Tabs").borders(Borders::ALL))
-        .style(Style::default())
-        .highlight_style(Style::default().fg(Color::Green))
-        .select(0);
-    frame.render_widget(tabs, sub_area[0]);
+    frame.render_widget(make_tab_bar(app), sub_area[0]);
 
     let main_sub_area = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(sub_area[1]);
+        .split(sub_area[1].inner(&Margin {
+            horizontal: 1,
+            vertical: 1,
+        }));
+
+    frame.render_widget(
+        Block::default()
+            .title("Sub-block")
+            .title_alignment(Alignment::Left)
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded),
+        sub_area[1],
+    );
 
     let sparkline = Sparkline::default()
         .block(
@@ -75,6 +82,21 @@ pub fn render(app: &mut App, frame: &mut Frame) {
             .alignment(Alignment::Left),
         sub_area[2],
     )
+}
+
+fn make_tab_bar(app: &mut App) -> Tabs<'static> {
+    let tab_titles = vec!["Tab1", "Tab2", "Tab3", "Tab4"];
+    let tabs = Tabs::new(tab_titles)
+        .block(
+            Block::default()
+                .title("Tabs")
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded),
+        )
+        .style(Style::default())
+        .highlight_style(Style::default().fg(Color::Green))
+        .select(app.tab_index);
+    tabs
 }
 
 fn make_chart() -> Chart<'static> {
