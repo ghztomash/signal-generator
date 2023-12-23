@@ -42,7 +42,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let tab_area = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Min(1)])
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Length(1),
+        ])
         .split(main_sub_area[0].inner(&Margin {
             horizontal: 1,
             vertical: 1,
@@ -76,6 +80,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     );
 
     frame.render_widget(make_line_gauge(25.00), tab_area[1]);
+    frame.render_widget(make_gauge(25.00), tab_area[2]);
 
     frame.render_widget(make_status_bar(), sub_area[2])
 }
@@ -134,4 +139,13 @@ fn make_line_gauge(percent: f64) -> impl Widget + 'static {
         .style(Style::new().light_blue())
         .gauge_style(Style::new().fg(Color::Red))
         .line_set(symbols::line::THICK)
+}
+
+fn make_gauge(percent: f64) -> impl Widget + 'static {
+    let label = { format!("Amplitude: {}%", percent) };
+    Gauge::default()
+        .ratio(percent / 100.0)
+        .label(label)
+        .style(Style::new().light_blue())
+        .gauge_style(Style::new().fg(Color::Red))
 }
