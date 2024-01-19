@@ -1,3 +1,5 @@
+use waveforms_rs::Waveform;
+
 /// Application state
 const TAB_COUNT: usize = 4;
 
@@ -5,6 +7,7 @@ const TAB_COUNT: usize = 4;
 pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
+    pub waveform_preview: Waveform,
 }
 
 impl App {

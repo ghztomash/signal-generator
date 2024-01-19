@@ -61,7 +61,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     frame.render_widget(make_tab_bar(app), title_area[0]);
 
-    frame.render_widget(make_preview_canvas(), main_sub_area[1]);
+    frame.render_widget(make_preview_canvas(app), main_sub_area[1]);
 
     frame.render_widget(
         Block::default()
@@ -93,7 +93,13 @@ fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
         .select(app.tab_index)
 }
 
-fn make_preview_canvas() -> impl Widget + 'static {
+fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
+    let mut values: Vec<(f64, f64)> = Vec::new();
+    let mut val;
+    for i in 0..100 {
+        val = app.waveform_preview.process() as f64;
+        values.push((val * 20.0, i as f64))
+    }
     Canvas::default()
         .block(
             Block::default()
@@ -102,10 +108,10 @@ fn make_preview_canvas() -> impl Widget + 'static {
                 .border_type(BorderType::Rounded),
         )
         .marker(Marker::Braille)
-        .paint(|ctx| {
-            ctx.draw(&Map {
+        .paint(move |ctx| {
+            ctx.draw(&Points {
+                coords: &values,
                 color: Color::Green,
-                resolution: MapResolution::High,
             });
             ctx.print(10.0, 10.0, "You are here".yellow());
         })
