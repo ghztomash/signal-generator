@@ -7,7 +7,8 @@ const TAB_COUNT: usize = 4;
 pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
-    pub waveform_preview: Waveform,
+    pub waveform_preview_a: Waveform,
+    pub waveform_preview_b: Waveform,
 }
 
 impl App {

@@ -94,11 +94,16 @@ fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
 }
 
 fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
-    let mut values: Vec<(f64, f64)> = Vec::new();
+    app.waveform_preview_a.reset();
+    app.waveform_preview_b.reset();
+    let mut values_a: Vec<(f64, f64)> = Vec::new();
+    let mut values_b: Vec<(f64, f64)> = Vec::new();
     let mut val;
     for i in 0..100 {
-        val = app.waveform_preview.process() as f64;
-        values.push((val * 20.0, i as f64))
+        val = app.waveform_preview_a.process() as f64;
+        values_a.push((i as f64, val));
+        val = app.waveform_preview_b.process() as f64;
+        values_b.push((i as f64, val));
     }
     Canvas::default()
         .block(
@@ -110,13 +115,18 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
         .marker(Marker::Braille)
         .paint(move |ctx| {
             ctx.draw(&Points {
-                coords: &values,
+                coords: &values_a,
                 color: Color::Green,
             });
-            ctx.print(10.0, 10.0, "You are here".yellow());
+            ctx.draw(&Line {
+                x1: 0.0, y1: 0.0, x2: 100.0, y2: 0.0, color: Color::Blue
+            });
+            ctx.print(0.0, -1.0, "-1".red());
+            ctx.print(0.0, 0.0, "0".red());
+            ctx.print(0.0, 1.0, "1".red());
         })
-        .x_bounds([-180.0, 180.0])
-        .y_bounds([-90.0, 90.0])
+        .x_bounds([0.0, 100.0])
+        .y_bounds([-1.0, 1.0])
 }
 
 fn make_status_bar() -> impl Widget + 'static {
