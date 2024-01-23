@@ -2,13 +2,26 @@ use waveforms_rs::Waveform;
 
 /// Application state
 const TAB_COUNT: usize = 4;
+const PARAMETER_COUNT: usize = 5;
 
 #[derive(Debug, Default)]
 pub struct App {
     pub should_quit: bool,
+    pub command_mode: bool,
+    pub command: String,
     pub tab_index: usize,
+    pub parameter_index: usize,
+    pub parameter: Parameter,
     pub waveform_preview_a: Waveform,
     pub waveform_preview_b: Waveform,
+}
+
+#[derive(Default, Debug)]
+pub enum Parameter {
+    #[default]
+    Frequency,
+    Amplitude,
+    Waveform,
 }
 
 impl App {
@@ -38,6 +51,55 @@ impl App {
         if index < TAB_COUNT {
             self.tab_index = index;
         }
+    }
+
+    pub fn next_parameter(&mut self) {
+        self.parameter_index = (self.parameter_index + 1) % PARAMETER_COUNT;
+        self.set_parameter_index();
+    }
+
+    pub fn previous_parameter(&mut self) {
+        if self.parameter_index > 0 {
+            self.parameter_index -= 1;
+        } else {
+            self.parameter_index = PARAMETER_COUNT - 1;
+        }
+        self.set_parameter_index();
+    }
+
+    pub fn set_parameter_index(&mut self) {
+        match self.parameter_index {
+            0 => self.parameter = Parameter::Frequency,
+            1 => self.parameter = Parameter::Amplitude,
+            2 => self.parameter = Parameter::Waveform,
+            _ => panic!("wrong parameter index"),
+        };
+    }
+
+    pub fn increase_parameter_value(&mut self) {
+        match self.parameter {
+            Parameter::Frequency => {
+                let mut frequency = self.waveform_preview_a.frequency();
+                frequency += 10.0;
+                self.waveform_preview_a.set_frequency(frequency);
+            }
+            Parameter::Amplitude => {
+                let mut amplitude = self.waveform_preview_a.amplitude();
+                amplitude += 10.0;
+                self.waveform_preview_a.set_amplitude(amplitude);
+            }
+            Parameter::Waveform => {}
+        }
+    }
+
+    pub fn set_command_mode(&mut self, enabled: bool) {
+        self.command_mode = enabled;
+    }
+
+    pub fn process_command(&mut self) {
+        self.waveform_preview_b
+            .set_waveform_type(waveforms_rs::WaveformType::Triangle);
+        // self.waveform_preview_b.set_frequency(880.0);
     }
 }
 
