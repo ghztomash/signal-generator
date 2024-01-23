@@ -116,14 +116,18 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
         .paint(move |ctx| {
             ctx.draw(&Points {
                 coords: &values_a,
-                color: Color::Green,
+                color: Color::Red,
+            });
+            ctx.draw(&Points {
+                coords: &values_b,
+                color: Color::Yellow,
             });
             ctx.draw(&Line {
                 x1: 0.0, y1: 0.0, x2: 100.0, y2: 0.0, color: Color::Blue
             });
-            ctx.print(0.0, -1.0, "-1".red());
-            ctx.print(0.0, 0.0, "0".red());
-            ctx.print(0.0, 1.0, "1".red());
+            ctx.print(0.0, -1.0, "-1".gray());
+            ctx.print(0.0, 0.0, "0".gray());
+            ctx.print(0.0, 1.0, "1".gray());
         })
         .x_bounds([0.0, 100.0])
         .y_bounds([-1.0, 1.0])
