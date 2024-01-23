@@ -11,6 +11,11 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
         }
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.previous_tab(),
+        KeyCode::Enter => {
+            app.set_command_mode(false);
+            app.process_command();
+        }
+        KeyCode::Char(':') => app.set_command_mode(true),
         KeyCode::Char('1') => app.set_tab(0),
         KeyCode::Char('2') => app.set_tab(1),
         KeyCode::Char('3') => app.set_tab(2),
