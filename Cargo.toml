@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 smplr-rs = {path = "../smplr-rs"}
+waveforms-rs = {path = '../waveforms-rs'}
 pulseaudio-simple-device = {path = "../pulseaudio-simple-device"}
 ratatui = "0.25.0"
 crossterm = "0.27.0"
