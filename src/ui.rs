@@ -1,15 +1,15 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Margin},
-    prelude::{Alignment, Frame, Marker},
+    prelude::{Alignment, Frame, Marker, Rect},
     style::{Color, Style, Stylize},
     symbols,
     widgets::{
         canvas::*, Axis, Block, BorderType, Borders, Chart, Clear, Dataset, Gauge, GraphType,
-        LineGauge, Paragraph, Tabs, Widget,
+        LineGauge, Paragraph, Tabs, Widget
     },
 };
 
-use crate::app::App;
+use crate::app::{App, Mode};
 
 pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(Clear, frame.size());
@@ -82,7 +82,14 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(make_line_gauge(25.00), tab_area[1]);
     frame.render_widget(make_gauge(25.00), tab_area[2]);
 
-    frame.render_widget(make_status_bar(), sub_area[2])
+    frame.render_widget(make_status_bar(), sub_area[2]);
+
+    if app.mode == Mode::Help {
+        let block = Block::default().title("Popup").borders(Borders::ALL);
+        let area = centered_rect(60, 20, area);
+        frame.render_widget(Clear, area); //this clears out the background
+        frame.render_widget(block, area);
+    }
 }
 
 fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
@@ -168,4 +175,25 @@ fn make_gauge(percent: f64) -> impl Widget + 'static {
         .label(label)
         .style(Style::new().light_blue())
         .gauge_style(Style::new().fg(Color::Red))
+}
+
+/// helper function to create a centered rect using up certain percentage of the available rect `r`
+fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(r);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup_layout[1])[1]
 }
