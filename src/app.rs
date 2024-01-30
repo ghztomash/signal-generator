@@ -7,21 +7,30 @@ const PARAMETER_COUNT: usize = 5;
 #[derive(Debug, Default)]
 pub struct App {
     pub should_quit: bool,
-    pub command_mode: bool,
-    pub command: String,
     pub tab_index: usize,
     pub parameter_index: usize,
     pub parameter: Parameter,
+    pub mode: Mode,
+    pub command: String,
     pub waveform_preview_a: Waveform,
     pub waveform_preview_b: Waveform,
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub enum Parameter {
     #[default]
     Frequency,
     Amplitude,
     Waveform,
+}
+
+#[derive(Default, Debug, PartialEq)]
+pub enum Mode {
+    #[default]
+    Normal,
+    Command,
+    Keypad,
+    Help,
 }
 
 impl App {
@@ -92,8 +101,28 @@ impl App {
         }
     }
 
-    pub fn set_command_mode(&mut self, enabled: bool) {
-        self.command_mode = enabled;
+    pub fn set_parameter_value(&mut self, value: f32) {
+        match self.parameter {
+            Parameter::Frequency => {
+                self.waveform_preview_a.set_frequency(value);
+            }
+            Parameter::Amplitude => {
+                self.waveform_preview_a.set_amplitude(value);
+            }
+            Parameter::Waveform => {}
+        }
+    }
+
+    pub fn set_normal_mode(&mut self) {
+        self.mode = Mode::Normal;
+    }
+
+    pub fn set_help_mode(&mut self) {
+        self.mode = Mode::Help;
+    }
+
+    pub fn set_command_mode(&mut self) {
+        self.mode = Mode::Command;
     }
 
     pub fn process_command(&mut self) {
