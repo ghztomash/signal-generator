@@ -6,16 +6,24 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
         app.set_normal_mode();
         return;
     } else if app.mode == Mode::Command {
-        // app.push_command_char(key_event.code);
-    }
-    match key_event.code {
-        KeyCode::Esc => {
-            app.set_normal_mode();
-        }
-        KeyCode::Char('q') => {
-            if app.mode == Mode::Normal {
-                app.quit();
+        match key_event.code {
+            KeyCode::Char(c) => {
+                app.push_command_char(c);
             }
+            KeyCode::Backspace => {
+                app.pop_command_char();
+            }
+            KeyCode::Enter => {
+                app.process_command();
+            }
+            _ => {}
+        }
+        return;
+    }
+    // normal mode
+    match key_event.code {
+        KeyCode::Char('q') => {
+            app.quit();
         }
         KeyCode::Char('c') | KeyCode::Char('C') => {
             if key_event.modifiers == KeyModifiers::CONTROL {
@@ -27,15 +35,7 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
         }
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.previous_tab(),
-        KeyCode::Enter => {
-            app.process_command();
-            app.set_normal_mode();
-        }
-        KeyCode::Backspace => {
-            // if app.command_mode() {
-            //     app.pop_command_char();
-            // }
-        }
+
         KeyCode::Char(':') => app.set_command_mode(),
         KeyCode::Char('1') => app.set_tab(0),
         KeyCode::Char('2') => app.set_tab(1),

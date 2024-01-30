@@ -82,11 +82,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(make_line_gauge(25.00), tab_area[1]);
     frame.render_widget(make_gauge(25.00), tab_area[2]);
 
-    frame.render_widget(make_status_bar(), sub_area[2]);
+    frame.render_widget(make_status_bar(app), sub_area[2]);
 
     if app.mode == Mode::Help {
-        let block = Block::default().title("Popup").borders(Borders::ALL);
-        let area = centered_rect(60, 20, area);
+        let block = Paragraph::new("Help").block(Block::default().title("Popup").borders(Borders::ALL));
+        let area = centered_rect(80, 60, area);
         frame.render_widget(Clear, area); //this clears out the background
         frame.render_widget(block, area);
     }
@@ -140,8 +140,15 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
         .y_bounds([-1.0, 1.0])
 }
 
-fn make_status_bar() -> impl Widget + 'static {
-    Paragraph::new(format!("Press `Esc`, `Ctrl-C` or `q` to stop running."))
+fn make_status_bar(app: &App) -> impl Widget + 'static {
+    let mut status_text = format!("Mode: {:?}", app.mode);
+    status_text += &" | Press 'h' for help, 'q' to quit.";
+
+    if app.mode == Mode::Command {
+        status_text += &format!(" | :{}", app.command);
+    }
+
+    Paragraph::new(status_text)
         .block(
             Block::default()
                 .title("Status")

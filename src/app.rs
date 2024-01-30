@@ -115,6 +115,7 @@ impl App {
 
     pub fn set_normal_mode(&mut self) {
         self.mode = Mode::Normal;
+        self.command.clear();
     }
 
     pub fn set_help_mode(&mut self) {
@@ -123,12 +124,58 @@ impl App {
 
     pub fn set_command_mode(&mut self) {
         self.mode = Mode::Command;
+        self.command.clear();
+    }
+
+    pub fn push_command_char(&mut self, c: char) {
+        match c {
+            _ if c.is_alphanumeric() => self.command.push(c),
+            ' ' => self.command.push(c),
+            ',' => self.command.push(c),
+            '.' => self.command.push(c),
+            '-' => self.command.push(c),
+            '+' => self.command.push(c),
+            _ => {}
+        }
+    }
+
+    pub fn pop_command_char(&mut self) {
+        self.command.pop();
     }
 
     pub fn process_command(&mut self) {
-        self.waveform_preview_b
-            .set_waveform_type(waveforms_rs::WaveformType::Triangle);
-        // self.waveform_preview_b.set_frequency(880.0);
+        let command = self.command.to_lowercase();
+        self.command.clear();
+        let parameters = command.split_whitespace().collect::<Vec<&str>>();
+
+        // process command
+        match parameters.first().unwrap_or(&"").as_ref() {
+            "q" | "quit" | "exit" => self.quit(),
+            "h" | "help" => {
+                self.set_help_mode();
+                return;
+            }
+            "f" | "freq" | "frequency" => {
+                self.parameter = Parameter::Frequency;
+                if parameters.len() > 1 {
+                    if let Ok(frequency) = parameters[1].parse::<f32>() {
+                        self.set_parameter_value(frequency);
+                    }
+                }
+            }
+            "a" | "amp" | "amplitude" => {
+                self.parameter = Parameter::Amplitude;
+                if parameters.len() > 1 {
+                    if let Ok(amplitude) = parameters[1].parse::<f32>() {
+                        self.set_parameter_value(amplitude);
+                    }
+                }
+            }
+            _ => (),
+        }
+
+        // reset normal mode
+        self.set_normal_mode();
     }
 }
 
