@@ -2,26 +2,54 @@ use waveforms_rs::Waveform;
 
 /// Application state
 const TAB_COUNT: usize = 4;
-const PARAMETER_COUNT: usize = 5;
 
 #[derive(Debug, Default)]
 pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
-    pub parameter_index: usize,
-    pub parameter: Parameter,
+    pub selected_parameter: Parameter,
     pub mode: Mode,
     pub command: String,
     pub waveform_preview_a: Waveform,
     pub waveform_preview_b: Waveform,
 }
 
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq, PartialOrd)]
 pub enum Parameter {
     #[default]
     Frequency,
     Amplitude,
     Waveform,
+}
+
+impl TryFrom<u8> for Parameter {
+    type Error = ();
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Parameter::Frequency),
+            1 => Ok(Parameter::Amplitude),
+            2 => Ok(Parameter::Waveform),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Parameter {
+    fn next(&self) -> Self {
+        match self {
+            Parameter::Frequency => Parameter::Amplitude,
+            Parameter::Amplitude => Parameter::Waveform,
+            Parameter::Waveform => Parameter::Frequency,
+        }
+    }
+
+    fn previous(&self) -> Self {
+        match self {
+            Parameter::Frequency => Parameter::Waveform,
+            Parameter::Amplitude => Parameter::Frequency,
+            Parameter::Waveform => Parameter::Amplitude,
+        }
+    }
 }
 
 #[derive(Default, Debug, PartialEq)]
@@ -63,53 +91,48 @@ impl App {
     }
 
     pub fn next_parameter(&mut self) {
-        self.parameter_index = (self.parameter_index + 1) % PARAMETER_COUNT;
-        self.set_parameter_index();
+        self.selected_parameter = self.selected_parameter.next();
     }
 
     pub fn previous_parameter(&mut self) {
-        if self.parameter_index > 0 {
-            self.parameter_index -= 1;
-        } else {
-            self.parameter_index = PARAMETER_COUNT - 1;
-        }
-        self.set_parameter_index();
+        self.selected_parameter = self.selected_parameter.previous();
     }
 
-    pub fn set_parameter_index(&mut self) {
-        match self.parameter_index {
-            0 => self.parameter = Parameter::Frequency,
-            1 => self.parameter = Parameter::Amplitude,
-            2 => self.parameter = Parameter::Waveform,
-            _ => panic!("wrong parameter index"),
-        };
-    }
-
-    pub fn increase_parameter_value(&mut self) {
-        match self.parameter {
+    pub fn increase_parameter_value(&mut self, parameter: Parameter) {
+        match parameter {
             Parameter::Frequency => {
                 let mut frequency = self.waveform_preview_a.frequency();
-                frequency += 10.0;
+                frequency += 1.0;
                 self.waveform_preview_a.set_frequency(frequency);
             }
             Parameter::Amplitude => {
                 let mut amplitude = self.waveform_preview_a.amplitude();
-                amplitude += 10.0;
+                amplitude += 1.0;
                 self.waveform_preview_a.set_amplitude(amplitude);
             }
-            Parameter::Waveform => {}
+            Parameter::Waveform => {
+                let waveform = *self.waveform_preview_a.waveform_type() as u8;
+                if let Ok(wave) = (waveform + 1).try_into() {
+                self.waveform_preview_a.set_waveform_type(
+                    wave
+                );}
+            }
         }
     }
 
-    pub fn set_parameter_value(&mut self, value: f32) {
-        match self.parameter {
+    pub fn set_parameter_value(&mut self, parameter: Parameter, value: f32) {
+        match parameter {
             Parameter::Frequency => {
                 self.waveform_preview_a.set_frequency(value);
             }
             Parameter::Amplitude => {
                 self.waveform_preview_a.set_amplitude(value);
             }
-            Parameter::Waveform => {}
+            Parameter::Waveform => {
+                if let Ok(waveform) = (value as u8).try_into() {
+                    self.waveform_preview_a.set_waveform_type(waveform);
+                }
+            }
         }
     }
 
