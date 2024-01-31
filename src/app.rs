@@ -153,11 +153,7 @@ impl App {
     pub fn push_command_char(&mut self, c: char) {
         match c {
             _ if c.is_alphanumeric() => self.command.push(c),
-            ' ' => self.command.push(c),
-            ',' => self.command.push(c),
-            '.' => self.command.push(c),
-            '-' => self.command.push(c),
-            '+' => self.command.push(c),
+            ' ' | ',' | '.' | '-' => self.command.push(c),
             _ => {}
         }
     }
@@ -179,22 +175,46 @@ impl App {
                 return;
             }
             "f" | "freq" | "frequency" => {
-                self.parameter = Parameter::Frequency;
                 if parameters.len() > 1 {
                     if let Ok(frequency) = parameters[1].parse::<f32>() {
-                        self.set_parameter_value(frequency);
+                        self.set_parameter_value(Parameter::Frequency, frequency);
                     }
                 }
             }
             "a" | "amp" | "amplitude" => {
-                self.parameter = Parameter::Amplitude;
                 if parameters.len() > 1 {
                     if let Ok(amplitude) = parameters[1].parse::<f32>() {
-                        self.set_parameter_value(amplitude);
+                        self.set_parameter_value(Parameter::Amplitude, amplitude);
                     }
                 }
             }
-            _ => (),
+            "w" | "wave" | "waveform" => {
+                if parameters.len() > 1 {
+                    if let Ok(waveform) = parameters[1].parse::<u8>() {
+                        self.set_parameter_value(Parameter::Waveform, waveform as f32);
+                    } else {
+                        match parameters[1].to_lowercase().as_ref() {
+                            "sine" => {
+                                self.set_parameter_value(Parameter::Waveform, 0.0);
+                            }
+                            "square" => {
+                                self.set_parameter_value(Parameter::Waveform, 1.0);
+                            }
+                            "triangle" => {
+                                self.set_parameter_value(Parameter::Waveform, 2.0);
+                            }
+                            "sawtooth" => {
+                                self.set_parameter_value(Parameter::Waveform, 3.0);
+                            }
+                            "noise" => {
+                                self.set_parameter_value(Parameter::Waveform, 4.0);
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+            _ => {},
         }
 
         // reset normal mode
