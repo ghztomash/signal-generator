@@ -2,6 +2,7 @@ use waveforms_rs::Waveform;
 
 /// Application state
 const TAB_COUNT: usize = 4;
+const WAVEFORMS_COUNT: usize = 2;
 
 #[derive(Debug, Default)]
 pub struct App {
@@ -10,8 +11,8 @@ pub struct App {
     pub selected_parameter: Parameter,
     pub mode: Mode,
     pub command: String,
-    pub waveform_preview_a: Waveform,
-    pub waveform_preview_b: Waveform,
+    pub waveform_previews: Vec<Waveform>,
+    selected_waveform: usize,
 }
 
 #[derive(Default, Debug, PartialEq, PartialOrd)]
@@ -63,7 +64,19 @@ pub enum Mode {
 
 impl App {
     pub fn new() -> Self {
-        Self::default()
+        let mut waveform_previews: Vec<Waveform> = Vec::new();
+        for _ in 0..WAVEFORMS_COUNT {
+            waveform_previews.push(Waveform::default());
+        }
+        Self {
+            should_quit: false,
+            tab_index: 0,
+            selected_parameter: Parameter::Frequency,
+            mode: Mode::Normal,
+            command: String::new(),
+            waveform_previews,
+            selected_waveform: 0,
+        }
     }
 
     pub fn tick(&self) {}
@@ -73,20 +86,23 @@ impl App {
     }
 
     pub fn next_tab(&mut self) {
-        self.tab_index = (self.tab_index + 1) % TAB_COUNT;
+        self.set_tab((self.tab_index + 1) % TAB_COUNT);
     }
 
     pub fn previous_tab(&mut self) {
         if self.tab_index > 0 {
-            self.tab_index -= 1;
+            self.set_tab(self.tab_index - 1);
         } else {
-            self.tab_index = TAB_COUNT - 1;
+            self.set_tab(TAB_COUNT - 1);
         }
     }
 
     pub fn set_tab(&mut self, index: usize) {
         if index < TAB_COUNT {
             self.tab_index = index;
+        }
+        if index < WAVEFORMS_COUNT {
+            self.selected_waveform = index;
         }
     }
 
@@ -101,19 +117,19 @@ impl App {
     pub fn increase_parameter_value(&mut self, parameter: Parameter) {
         match parameter {
             Parameter::Frequency => {
-                let mut frequency = self.waveform_preview_a.frequency();
+                let mut frequency = self.waveform_previews[self.selected_waveform].frequency();
                 frequency += 1.0;
-                self.waveform_preview_a.set_frequency(frequency);
+                self.waveform_previews[self.selected_waveform].set_frequency(frequency);
             }
             Parameter::Amplitude => {
-                let mut amplitude = self.waveform_preview_a.amplitude();
+                let mut amplitude = self.waveform_previews[self.selected_waveform].amplitude();
                 amplitude += 1.0;
-                self.waveform_preview_a.set_amplitude(amplitude);
+                self.waveform_previews[self.selected_waveform].set_amplitude(amplitude);
             }
             Parameter::Waveform => {
-                let waveform = *self.waveform_preview_a.waveform_type() as u8;
+                let waveform = *self.waveform_previews[self.selected_waveform].waveform_type() as u8;
                 if let Ok(wave) = (waveform + 1).try_into() {
-                self.waveform_preview_a.set_waveform_type(
+                self.waveform_previews[self.selected_waveform].set_waveform_type(
                     wave
                 );}
             }
@@ -123,14 +139,14 @@ impl App {
     pub fn set_parameter_value(&mut self, parameter: Parameter, value: f32) {
         match parameter {
             Parameter::Frequency => {
-                self.waveform_preview_a.set_frequency(value);
+                self.waveform_previews[self.selected_waveform].set_frequency(value);
             }
             Parameter::Amplitude => {
-                self.waveform_preview_a.set_amplitude(value);
+                self.waveform_previews[self.selected_waveform].set_amplitude(value);
             }
             Parameter::Waveform => {
                 if let Ok(waveform) = (value as u8).try_into() {
-                    self.waveform_preview_a.set_waveform_type(waveform);
+                    self.waveform_previews[self.selected_waveform].set_waveform_type(waveform);
                 }
             }
         }

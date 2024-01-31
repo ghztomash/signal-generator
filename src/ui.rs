@@ -5,7 +5,7 @@ use ratatui::{
     symbols,
     widgets::{
         canvas::*, Axis, Block, BorderType, Borders, Chart, Clear, Dataset, Gauge, GraphType,
-        LineGauge, Paragraph, Tabs, Widget
+        LineGauge, Paragraph, Tabs, Widget,
     },
 };
 
@@ -85,7 +85,8 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(make_status_bar(app), sub_area[2]);
 
     if app.mode == Mode::Help {
-        let block = Paragraph::new("Help").block(Block::default().title("Popup").borders(Borders::ALL));
+        let block =
+            Paragraph::new("Help").block(Block::default().title("Popup").borders(Borders::ALL));
         let area = centered_rect(80, 60, area);
         frame.render_widget(Clear, area); //this clears out the background
         frame.render_widget(block, area);
@@ -101,15 +102,16 @@ fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
 }
 
 fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
-    app.waveform_preview_a.reset();
-    app.waveform_preview_b.reset();
+    for waveform in app.waveform_previews.iter_mut() {
+        waveform.reset();
+    }
     let mut values_a: Vec<(f64, f64)> = Vec::new();
     let mut values_b: Vec<(f64, f64)> = Vec::new();
     let mut val;
     for i in 0..100 {
-        val = app.waveform_preview_a.process() as f64;
+        val = app.waveform_previews[0].process() as f64;
         values_a.push((i as f64, val));
-        val = app.waveform_preview_b.process() as f64;
+        val = app.waveform_previews[1].process() as f64;
         values_b.push((i as f64, val));
     }
     Canvas::default()
@@ -130,7 +132,11 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
                 color: Color::Yellow,
             });
             ctx.draw(&Line {
-                x1: 0.0, y1: 0.0, x2: 100.0, y2: 0.0, color: Color::Blue
+                x1: 0.0,
+                y1: 0.0,
+                x2: 100.0,
+                y2: 0.0,
+                color: Color::Blue,
             });
             ctx.print(0.0, -1.0, "-1".gray());
             ctx.print(0.0, 0.0, "0".gray());
