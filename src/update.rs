@@ -27,8 +27,12 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
     }
     // normal mode
     match key_event.code {
-        KeyCode::Char('q') => {
-            app.quit();
+        KeyCode::Char('q') | KeyCode::Char('Q') => {
+            if app.mode == Mode::Normal {
+                app.quit();
+            } else {
+                app.set_normal_mode();
+            }
         }
         KeyCode::Char('c') | KeyCode::Char('C') => {
             if key_event.modifiers == KeyModifiers::CONTROL {
