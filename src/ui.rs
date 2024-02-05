@@ -147,11 +147,11 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
 }
 
 fn make_status_bar(app: &App) -> impl Widget + 'static {
-    let mut status_text = format!("Mode: {:?}", app.mode);
+    let mut status_text = format!("{:?}", app.mode);
     status_text += &" | Press 'h' for help, 'q' to quit.";
 
     if app.mode == Mode::Command {
-        status_text += &format!(" | :{}", app.command);
+        status_text = format!(":{}", app.command);
     }
 
     Paragraph::new(status_text)
