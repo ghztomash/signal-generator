@@ -18,6 +18,12 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
             KeyCode::Backspace => {
                 app.pop_command_char();
             }
+            KeyCode::Up => {
+                app.command_history_last();
+            }
+            KeyCode::Down => {
+                app.command_history_next();
+            }
             KeyCode::Enter => {
                 app.process_command();
             }

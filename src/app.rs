@@ -10,7 +10,11 @@ pub struct App {
     pub tab_index: usize,
     pub selected_parameter: Parameter,
     pub mode: Mode,
+
     pub command: String,
+    pub command_history: Vec<String>,
+    pub command_history_index: usize,
+
     pub waveform_previews: Vec<Waveform>,
     selected_waveform: usize,
 }
@@ -76,6 +80,8 @@ impl App {
             command: String::new(),
             waveform_previews,
             selected_waveform: 0,
+            command_history: Vec::new(),
+            command_history_index: 0,
         }
     }
 
@@ -179,11 +185,17 @@ impl App {
     }
 
     pub fn process_command(&mut self) {
-        let command = self.command.to_lowercase();
+        let command = self.command.trim().to_lowercase();
         self.command.clear();
-        let parameters = command.split_whitespace().collect::<Vec<&str>>();
+
+        // add to command history
+        if command.len() > 0 {
+            self.command_history.insert(0, command.clone());
+            self.command_history_index = 0;
+        }
 
         // process command
+        let parameters = command.split_whitespace().collect::<Vec<&str>>();
         match parameters.first().unwrap_or(&"").as_ref() {
             "q" | "quit" | "exit" => self.quit(),
             "h" | "help" => {
@@ -235,6 +247,28 @@ impl App {
 
         // reset normal mode
         self.set_normal_mode();
+    }
+
+    pub fn command_history_last(&mut self) {
+        if self.command_history.len() == 0 {
+            return;
+        }
+
+        self.command = self.command_history[self.command_history_index].clone();
+        if self.command_history_index < self.command_history.len() - 1 {
+            self.command_history_index += 1;
+        }
+    }
+
+    pub fn command_history_next(&mut self) {
+        if self.command_history.len() == 0 {
+            return;
+        }
+
+        self.command = self.command_history[self.command_history_index].clone();
+        if self.command_history_index > 0 {
+            self.command_history_index -= 1;
+        }
     }
 }
 
