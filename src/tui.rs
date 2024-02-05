@@ -2,7 +2,10 @@ use std::{io, panic};
 
 use color_eyre::Result;
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{
+        DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags,
+        PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
+    },
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
@@ -32,7 +35,12 @@ impl Tui {
         // enter raw mode
         terminal::enable_raw_mode()?;
         // enter alternate screen
-        crossterm::execute!(io::stderr(), EnterAlternateScreen, EnableMouseCapture)?;
+        crossterm::execute!(
+            io::stderr(),
+            PushKeyboardEnhancementFlags(KeyboardEnhancementFlags::REPORT_EVENT_TYPES),
+            EnterAlternateScreen,
+            EnableMouseCapture
+        )?;
 
         // Define custom panic hook to exit alternate screen
         let panic_hook = panic::take_hook();
@@ -50,7 +58,12 @@ impl Tui {
     /// Reset the terminal user interface.
     pub fn reset() -> Result<()> {
         // exit alternate screen
-        crossterm::execute!(io::stderr(), LeaveAlternateScreen, DisableMouseCapture)?;
+        crossterm::execute!(
+            io::stderr(),
+            PopKeyboardEnhancementFlags,
+            LeaveAlternateScreen,
+            DisableMouseCapture
+        )?;
         // exit raw mode
         terminal::disable_raw_mode()?;
         Ok(())

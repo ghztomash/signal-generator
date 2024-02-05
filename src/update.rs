@@ -2,6 +2,11 @@ use crate::app::{App, Mode};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn update(app: &mut App, key_event: KeyEvent) {
+    // ignore key repeat events
+    if key_event.kind == crossterm::event::KeyEventKind::Repeat {
+        return;
+    }
+
     if key_event.code == KeyCode::Esc {
         app.set_normal_mode();
         return;
