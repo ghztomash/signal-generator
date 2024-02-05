@@ -80,7 +80,7 @@ impl App {
             command: String::new(),
             waveform_previews,
             selected_waveform: 0,
-            command_history: Vec::new(),
+            command_history: vec!["".to_string()],
             command_history_index: 0,
         }
     }
@@ -190,7 +190,7 @@ impl App {
 
         // add to command history
         if command.len() > 0 {
-            self.command_history.insert(0, command.clone());
+            self.command_history.insert(1, command.clone());
             self.command_history_index = 0;
         }
 
@@ -254,9 +254,9 @@ impl App {
             return;
         }
 
-        self.command = self.command_history[self.command_history_index].clone();
         if self.command_history_index < self.command_history.len() - 1 {
             self.command_history_index += 1;
+            self.command = self.command_history[self.command_history_index].clone();
         }
     }
 
@@ -265,9 +265,9 @@ impl App {
             return;
         }
 
-        self.command = self.command_history[self.command_history_index].clone();
         if self.command_history_index > 0 {
             self.command_history_index -= 1;
+            self.command = self.command_history[self.command_history_index].clone();
         }
     }
 }
