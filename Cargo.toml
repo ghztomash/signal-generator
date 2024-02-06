@@ -2,6 +2,14 @@
 name = "signal-generator"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "A Rust based signal generator"
+repository = "https://github.com/ghztomash/signal-generator"
+homepage = "https://tomashg.com/"
+readme = "README.md"
+authors = ["Tomash GHz <ghz.tomash@gmail.com>"]
+keywords = ["audio", "dsp", "tui"]
+categories = ["multimedia", "multimedia::audio", "command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
