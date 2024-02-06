@@ -1,8 +1,9 @@
 use waveforms_rs::Waveform;
 
 /// Application state
-const TAB_COUNT: usize = 4;
+const TAB_COUNT: usize = 3;
 const WAVEFORMS_COUNT: usize = 2;
+pub const TAB_TITLES: [&str; 3] = ["Channel A", "Channel B", "Output"];
 
 #[derive(Debug, Default)]
 pub struct App {

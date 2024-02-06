@@ -1,6 +1,6 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Margin},
-    prelude::{Alignment, Frame, Marker, Rect},
+    prelude::{Alignment, Frame, Marker, Rect, Text},
     style::{Color, Style, Stylize},
     symbols,
     widgets::{
@@ -9,14 +9,33 @@ use ratatui::{
     },
 };
 
+use crate::app::TAB_TITLES;
 use crate::app::{App, Mode};
+
+pub const HELP_LOGO: &str = r#"
+  ___ (_)__ ____  ___ _/ /__ ____ ___  ___ _______ _/ /____  ____
+ (_-</ / _ `/ _ \/ _ `/ / _ `/ -_) _ \/ -_) __/ _ `/ __/ _ \/ __/
+/___/_/\_, /_//_/\_,_/_/\_, /\__/_//_/\__/_/  \_,_/\__/\___/_/   
+      /___/            /___/                                     
+"#;
+
+/// Help text to show.
+pub const HELP_TEXT: &str = concat!(
+    env!("CARGO_PKG_NAME"),
+    " v",
+    env!("CARGO_PKG_VERSION"),
+    "\n",
+    env!("CARGO_PKG_REPOSITORY"),
+    "\nwritten by ",
+    env!("CARGO_PKG_AUTHORS"),
+);
 
 pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(Clear, frame.size());
 
     let area = frame.size().inner(&Margin {
-        horizontal: 2,
-        vertical: 1,
+        horizontal: 0,
+        vertical: 0,
     });
 
     let sub_area = Layout::default()
@@ -53,7 +72,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         }));
 
     frame.render_widget(
-        Paragraph::new("Signal Generator v{}")
+        Paragraph::new(format!("Signal Generator v{}", env!("CARGO_PKG_VERSION")))
             .style(Style::default())
             .alignment(Alignment::Right),
         title_area[1],
@@ -85,8 +104,8 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(make_status_bar(app), sub_area[2]);
 
     if app.mode == Mode::Help {
-        let block =
-            Paragraph::new("Help").block(Block::default().title("Popup").borders(Borders::ALL));
+        let block = Paragraph::new(format!("{}\n\n{}", HELP_LOGO, HELP_TEXT))
+            .block(Block::default().title("Help").borders(Borders::ALL));
         let area = centered_rect(80, 60, area);
         frame.render_widget(Clear, area); //this clears out the background
         frame.render_widget(block, area);
@@ -94,8 +113,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 }
 
 fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
-    let tab_titles = vec!["Channel A", "Channel B", "Output"];
-    Tabs::new(tab_titles)
+    Tabs::new(TAB_TITLES.to_vec())
         .style(Style::default())
         .highlight_style(Style::default().fg(Color::Green))
         .select(app.tab_index)
