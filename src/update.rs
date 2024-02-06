@@ -7,6 +7,8 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
         return;
     }
 
+    app.clear_warning();
+
     if key_event.code == KeyCode::Esc {
         app.set_normal_mode();
         return;
@@ -46,16 +48,32 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
             }
         }
         KeyCode::Char('h') | KeyCode::Char('H') => {
-            app.set_help_mode();
+            if app.mode == Mode::Help {
+                app.set_normal_mode();
+            } else {
+                app.set_help_mode();
+            }
         }
+        // parameter shortcuts
+        KeyCode::Char('f') | KeyCode::Char('F') => {
+            app.set_command_mode();
+            app.command.push_str("freq ");
+        }
+        KeyCode::Char('a') | KeyCode::Char('A') => {
+            app.set_command_mode();
+            app.command.push_str("amp ");
+        }
+        KeyCode::Char('w') | KeyCode::Char('W') => {
+            app.set_command_mode();
+            app.command.push_str("wave ");
+        }
+
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.previous_tab(),
 
         KeyCode::Char(':') => app.set_command_mode(),
         KeyCode::Char('1') => app.set_tab(0),
         KeyCode::Char('2') => app.set_tab(1),
-        KeyCode::Char('3') => app.set_tab(2),
-        KeyCode::Char('4') => app.set_tab(3),
         _ => {}
     };
 }

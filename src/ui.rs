@@ -94,7 +94,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 }
 
 fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
-    let tab_titles = vec!["Channel A", "Channel B", "Output", "Tab4"];
+    let tab_titles = vec!["Channel A", "Channel B", "Output"];
     Tabs::new(tab_titles)
         .style(Style::default())
         .highlight_style(Style::default().fg(Color::Green))
@@ -154,16 +154,23 @@ fn make_status_bar(app: &App) -> impl Widget + 'static {
         status_text = format!(":{}", app.command);
     }
 
+    let mut status_color = Color::White;
+
+    if app.warning != None {
+        status_text = format!("{}!", app.warning.as_ref().unwrap());
+        status_color = Color::Red;
+    }
+
     Paragraph::new(status_text)
         .block(
             Block::default()
                 .title("Status")
                 .title_alignment(Alignment::Left)
-                .title_style(Style::default().fg(Color::Green))
+                .title_style(Style::default().fg(Color::White))
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded),
         )
-        .style(Style::default().fg(Color::Yellow))
+        .style(Style::default().fg(status_color))
         .alignment(Alignment::Left)
 }
 

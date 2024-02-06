@@ -13,7 +13,9 @@ pub struct App {
 
     pub command: String,
     pub command_history: Vec<String>,
-    pub command_history_index: usize,
+    command_history_index: usize,
+
+    pub warning: Option<String>,
 
     pub waveform_previews: Vec<Waveform>,
     selected_waveform: usize,
@@ -82,6 +84,7 @@ impl App {
             selected_waveform: 0,
             command_history: vec!["".to_string()],
             command_history_index: 0,
+            warning: None,
         }
     }
 
@@ -107,7 +110,7 @@ impl App {
         if index < TAB_COUNT {
             self.tab_index = index;
         }
-        if index < WAVEFORMS_COUNT {
+        if index < self.waveform_previews.len() {
             self.selected_waveform = index;
         }
     }
@@ -175,7 +178,7 @@ impl App {
     pub fn push_command_char(&mut self, c: char) {
         match c {
             _ if c.is_alphanumeric() => self.command.push(c),
-            ' ' | ',' | '.' | '-' => self.command.push(c),
+            ' ' | ',' | '.' | '-' | '+' => self.command.push(c),
             _ => {}
         }
     }
@@ -195,7 +198,7 @@ impl App {
         }
 
         // process command
-        let parameters = command.split_whitespace().collect::<Vec<&str>>();
+        let parameters = command.split_whitespace().filter(|x| x.len() > 0).collect::<Vec<&str>>();
         match parameters.first().unwrap_or(&"").as_ref() {
             "q" | "quit" | "exit" => self.quit(),
             "h" | "help" => {
@@ -204,45 +207,53 @@ impl App {
             }
             "f" | "freq" | "frequency" => {
                 if parameters.len() > 1 {
-                    if let Ok(frequency) = parameters[1].parse::<f32>() {
+                    if let Ok(frequency) = parameters.get(1).unwrap_or(&"").parse::<f32>() {
                         self.set_parameter_value(Parameter::Frequency, frequency);
+                    } else {
+                        self.set_warning("Invalid frequency");
                     }
                 }
             }
             "a" | "amp" | "amplitude" => {
                 if parameters.len() > 1 {
-                    if let Ok(amplitude) = parameters[1].parse::<f32>() {
+                    if let Ok(amplitude) = parameters.get(1).unwrap_or(&"").parse::<f32>() {
                         self.set_parameter_value(Parameter::Amplitude, amplitude);
+                    } else {
+                        self.set_warning("Invalid amplitude");
                     }
                 }
             }
             "w" | "wave" | "waveform" => {
                 if parameters.len() > 1 {
-                    if let Ok(waveform) = parameters[1].parse::<u8>() {
+                    if let Ok(waveform) = parameters.get(1).unwrap_or(&"").parse::<u8>() {
                         self.set_parameter_value(Parameter::Waveform, waveform as f32);
                     } else {
-                        match parameters[1].to_lowercase().as_ref() {
+                        match parameters.get(1).unwrap_or(&"").to_lowercase().as_ref() {
                             "sine" => {
-                                self.set_parameter_value(Parameter::Waveform, 0.0);
-                            }
-                            "square" => {
                                 self.set_parameter_value(Parameter::Waveform, 1.0);
                             }
-                            "triangle" => {
+                            "square" => {
                                 self.set_parameter_value(Parameter::Waveform, 2.0);
                             }
-                            "sawtooth" => {
+                            "triangle" => {
                                 self.set_parameter_value(Parameter::Waveform, 3.0);
                             }
-                            "noise" => {
+                            "sawtooth" => {
                                 self.set_parameter_value(Parameter::Waveform, 4.0);
                             }
-                            _ => {}
+                            "noise" => {
+                                self.set_parameter_value(Parameter::Waveform, 5.0);
+                            }
+                            _ => {
+                                self.set_warning("Invalid waveform");
+                            }
                         }
                     }
                 }
             }
-            _ => {},
+            _ => {
+                self.set_warning("Unknown command");
+            }
         }
 
         // reset normal mode
@@ -269,6 +280,14 @@ impl App {
             self.command_history_index -= 1;
             self.command = self.command_history[self.command_history_index].clone();
         }
+    }
+
+    pub fn set_warning(&mut self, warning: &str) {
+        self.warning = Some(warning.to_string());
+    }
+
+    pub fn clear_warning(&mut self) {
+        self.warning = None;
     }
 }
 
