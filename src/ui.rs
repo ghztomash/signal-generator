@@ -87,7 +87,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
             .title("Control Panel")
             .title_alignment(Alignment::Left)
             .borders(Borders::ALL)
-            .border_type(BorderType::Rounded),
+            .border_type(BorderType::Plain),
         main_sub_area[0],
     );
 
@@ -137,7 +137,7 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
             Block::default()
                 .title("Canvas")
                 .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                .border_type(BorderType::Plain),
         )
         .marker(Marker::Braille)
         .paint(move |ctx| {
@@ -186,7 +186,7 @@ fn make_status_bar(app: &App) -> impl Widget + 'static {
                 .title_alignment(Alignment::Left)
                 .title_style(Style::default().fg(Color::White))
                 .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                .border_type(BorderType::Plain),
         )
         .style(Style::default().fg(status_color))
         .alignment(Alignment::Left)
