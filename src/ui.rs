@@ -41,12 +41,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let sub_area = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Min(1),
-            Constraint::Length(3),
-            Constraint::Length(1),
-        ])
+        .constraints([Constraint::Length(1), Constraint::Min(1)])
         .split(area);
 
     let title_area = Layout::default()
@@ -62,15 +57,8 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let tab_area = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Length(1),
-        ])
-        .split(main_sub_area[0].inner(&Margin {
-            horizontal: 1,
-            vertical: 1,
-        }));
+        .constraints([Constraint::Min(5), Constraint::Length(3)])
+        .split(main_sub_area[0]);
 
     frame.render_widget(
         Paragraph::new(format!("Signal Generator v{}", env!("CARGO_PKG_VERSION")))
@@ -79,7 +67,13 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         title_area[1],
     );
 
-    frame.render_widget(make_tab_bar(app), title_area[0]);
+    let tab_color = match app.tab_index {
+        0 => Color::Yellow,
+        1 => Color::Cyan,
+        _ => Color::White,
+    };
+
+    frame.render_widget(make_tab_bar(app, tab_color), title_area[0]);
 
     frame.render_widget(make_preview_canvas(app), main_sub_area[1]);
 
@@ -111,7 +105,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         dc_offset.as_str(),
     ];
     frame.render_stateful_widget(
-        make_parameter_list(parameters),
+        make_parameter_list(parameters, tab_color),
         tab_area[0],
         &mut app.list_state,
     );
@@ -130,6 +124,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
 fn make_parameter_list<'a>(
     parameters: Vec<&'a str>,
+    tab_color: Color,
 ) -> impl StatefulWidget<State = ListState> + 'a {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default();
@@ -139,7 +134,12 @@ fn make_parameter_list<'a>(
         .map(|item| ListItem::new(*item).style(normal_style));
 
     List::new(items)
-        .block(Block::default().borders(Borders::ALL))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Thick)
+                .border_style(Style::default().fg(tab_color)),
+        )
         .highlight_style(selected_style)
         .highlight_symbol(">> ")
 }
@@ -158,12 +158,12 @@ fn make_help_popup(app: &App) -> impl Widget + 'static {
         .alignment(Alignment::Left)
 }
 
-fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
+fn make_tab_bar(app: &mut App, tab_color: Color) -> impl Widget + 'static {
     Tabs::new(TAB_TITLES.to_vec())
         .style(Style::default())
         .highlight_style(
             Style::default()
-                .fg(Color::White)
+                .fg(tab_color)
                 .add_modifier(Modifier::REVERSED),
         )
         .select(app.tab_index)
@@ -185,7 +185,6 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
     Canvas::default()
         .block(
             Block::default()
-                .title("Canvas")
                 .borders(Borders::ALL)
                 .border_type(BorderType::Plain),
         )
@@ -193,22 +192,22 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
         .paint(move |ctx| {
             ctx.draw(&Points {
                 coords: &values_a,
-                color: Color::Red,
+                color: Color::Yellow,
             });
             ctx.draw(&Points {
                 coords: &values_b,
-                color: Color::Yellow,
+                color: Color::Cyan,
             });
             ctx.draw(&Line {
                 x1: 0.0,
                 y1: 0.0,
                 x2: 100.0,
                 y2: 0.0,
-                color: Color::Blue,
+                color: Color::DarkGray,
             });
-            ctx.print(0.0, -1.0, "-1".gray());
+            ctx.print(0.0, -1.0, "-1".dark_gray());
             ctx.print(0.0, 0.0, "0".gray());
-            ctx.print(0.0, 1.0, "1".gray());
+            ctx.print(0.0, 1.0, "1".dark_gray());
         })
         .x_bounds([0.0, 100.0])
         .y_bounds([-1.0, 1.0])
@@ -232,11 +231,12 @@ fn make_status_bar(app: &App) -> impl Widget + 'static {
     Paragraph::new(status_text)
         .block(
             Block::default()
-                .title("Status")
-                .title_alignment(Alignment::Left)
-                .title_style(Style::default().fg(Color::White))
+                // .title("Status")
+                // .title_alignment(Alignment::Left)
+                // .title_style(Style::default().fg(Color::White))
                 .borders(Borders::ALL)
-                .border_type(BorderType::Plain),
+                .border_type(BorderType::Plain)
+                .border_style(Style::default().fg(Color::White)),
         )
         .style(Style::default().fg(status_color))
         .alignment(Alignment::Left)
