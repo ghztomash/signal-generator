@@ -1,11 +1,12 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Margin},
-    prelude::{Alignment, Frame, Marker, Rect, Text},
+    prelude::{Alignment, Frame, Marker, Modifier, Rect, Text},
     style::{Color, Style, Stylize},
     symbols,
     widgets::{
-        canvas::*, Axis, Block, BorderType, Borders, Chart, Clear, Dataset, Gauge, GraphType,
-        LineGauge, Paragraph, Tabs, Widget,
+        canvas::*, Axis, Block, BorderType, Borders, Cell, Chart, Clear, Dataset, Gauge, GraphType,
+        LineGauge, List, ListItem, ListState, Paragraph, Row, StatefulWidget, Table, TableState,
+        Tabs, Widget,
     },
 };
 
@@ -82,40 +83,89 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     frame.render_widget(make_preview_canvas(app), main_sub_area[1]);
 
-    frame.render_widget(
-        Block::default()
-            .title("Control Panel")
-            .title_alignment(Alignment::Left)
-            .borders(Borders::ALL)
-            .border_type(BorderType::Plain),
-        main_sub_area[0],
+    let waveform = format!(
+        "Waveform: {}",
+        app.waveform_previews[app.selected_waveform].waveform_type()
     );
-
-    frame.render_widget(
-        Paragraph::new("Frequency:")
-            .style(Style::default())
-            .alignment(Alignment::Left),
+    let frequency = format!(
+        "Frequency: {:.2} Hz",
+        app.waveform_previews[app.selected_waveform].frequency()
+    );
+    let amplitude = format!(
+        "Amplitude: {:.2}",
+        app.waveform_previews[app.selected_waveform].amplitude()
+    );
+    let phase_offset = format!(
+        "Phase offset: {:.2}",
+        app.waveform_previews[app.selected_waveform].phase_offset()
+    );
+    let dc_offset = format!(
+        "DC offset: {:.2}",
+        app.waveform_previews[app.selected_waveform].dc_offset()
+    );
+    let parameters = vec![
+        waveform.as_str(),
+        frequency.as_str(),
+        amplitude.as_str(),
+        phase_offset.as_str(),
+        dc_offset.as_str(),
+    ];
+    frame.render_stateful_widget(
+        make_parameter_list(parameters),
         tab_area[0],
+        &mut app.list_state,
     );
 
-    frame.render_widget(make_line_gauge(25.00), tab_area[1]);
-    frame.render_widget(make_gauge(25.00), tab_area[2]);
+    // frame.render_widget(make_line_gauge(25.00), tab_area[1]);
+    // frame.render_widget(make_gauge(25.00), tab_area[2]);
 
-    frame.render_widget(make_status_bar(app), sub_area[2]);
+    frame.render_widget(make_status_bar(app), tab_area[1]);
 
     if app.mode == Mode::Help {
-        let block = Paragraph::new(format!("{}\n\n{}", HELP_LOGO, HELP_TEXT))
-            .block(Block::default().title("Help").borders(Borders::ALL));
         let area = centered_rect(80, 60, area);
         frame.render_widget(Clear, area); //this clears out the background
-        frame.render_widget(block, area);
+        frame.render_widget(make_help_popup(app), area);
     }
+}
+
+fn make_parameter_list<'a>(
+    parameters: Vec<&'a str>,
+) -> impl StatefulWidget<State = ListState> + 'a {
+    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
+    let normal_style = Style::default();
+
+    let items = parameters
+        .iter()
+        .map(|item| ListItem::new(*item).style(normal_style));
+
+    List::new(items)
+        .block(Block::default().borders(Borders::ALL))
+        .highlight_style(selected_style)
+        .highlight_symbol(">> ")
+}
+
+fn make_help_popup(app: &App) -> impl Widget + 'static {
+    let help_text = Text::raw(format!("{}\n\n{}", HELP_LOGO, HELP_TEXT));
+    Paragraph::new(help_text)
+        .block(
+            Block::default()
+                .title(" Help ")
+                .title_alignment(Alignment::Center)
+                .borders(Borders::ALL)
+                .border_type(BorderType::Thick),
+        )
+        .style(Style::default())
+        .alignment(Alignment::Left)
 }
 
 fn make_tab_bar(app: &mut App) -> impl Widget + 'static {
     Tabs::new(TAB_TITLES.to_vec())
         .style(Style::default())
-        .highlight_style(Style::default().fg(Color::Green))
+        .highlight_style(
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::REVERSED),
+        )
         .select(app.tab_index)
 }
 
