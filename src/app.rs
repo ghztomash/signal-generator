@@ -1,3 +1,4 @@
+use ratatui::widgets::ListState;
 use waveforms_rs::Waveform;
 
 /// Application state
@@ -10,6 +11,7 @@ pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
     pub selected_parameter: Parameter,
+    pub list_state: ListState,
     pub mode: Mode,
 
     pub command: String,
@@ -19,7 +21,7 @@ pub struct App {
     pub warning: Option<String>,
 
     pub waveform_previews: Vec<Waveform>,
-    selected_waveform: usize,
+    pub selected_waveform: usize,
 }
 
 #[derive(Default, Debug, PartialEq, PartialOrd)]
@@ -86,6 +88,7 @@ impl App {
             command_history: vec!["".to_string()],
             command_history_index: 0,
             warning: None,
+            list_state: ListState::default(),
         }
     }
 
@@ -137,11 +140,11 @@ impl App {
                 self.waveform_previews[self.selected_waveform].set_amplitude(amplitude);
             }
             Parameter::Waveform => {
-                let waveform = *self.waveform_previews[self.selected_waveform].waveform_type() as u8;
+                let waveform =
+                    *self.waveform_previews[self.selected_waveform].waveform_type() as u8;
                 if let Ok(wave) = (waveform + 1).try_into() {
-                self.waveform_previews[self.selected_waveform].set_waveform_type(
-                    wave
-                );}
+                    self.waveform_previews[self.selected_waveform].set_waveform_type(wave);
+                }
             }
         }
     }
@@ -199,7 +202,10 @@ impl App {
         }
 
         // process command
-        let parameters = command.split_whitespace().filter(|x| x.len() > 0).collect::<Vec<&str>>();
+        let parameters = command
+            .split_whitespace()
+            .filter(|x| x.len() > 0)
+            .collect::<Vec<&str>>();
         match parameters.first().unwrap_or(&"").as_ref() {
             "q" | "quit" | "exit" => self.quit(),
             "h" | "help" => {
