@@ -190,14 +190,6 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
         )
         .marker(Marker::Braille)
         .paint(move |ctx| {
-            ctx.draw(&Points {
-                coords: &values_a,
-                color: Color::Yellow,
-            });
-            ctx.draw(&Points {
-                coords: &values_b,
-                color: Color::Cyan,
-            });
             ctx.draw(&Line {
                 x1: 0.0,
                 y1: 0.0,
@@ -205,12 +197,36 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
                 y2: 0.0,
                 color: Color::DarkGray,
             });
-            ctx.print(0.0, -1.0, "-1".dark_gray());
-            ctx.print(0.0, 0.0, "0".gray());
-            ctx.print(0.0, 1.0, "1".dark_gray());
+            ctx.print(0.0, -1.0, "-1.0".dark_gray());
+            ctx.print(0.0, 0.0, "0.0".dark_gray());
+            ctx.print(0.0, 1.0, "+1.0".dark_gray());
+
+            // draw the waveforms
+            for i in 0..values_a.len() - 1 {
+                let p1 = values_a.get(i).unwrap_or(&(0.0, 0.0));
+                let p2 = values_a.get(i + 1).unwrap_or(&(0.0, 100.0));
+                ctx.draw(&Line {
+                    x1: p1.0,
+                    y1: p1.1,
+                    x2: p2.0,
+                    y2: p2.1,
+                    color: Color::Yellow,
+                });
+            }
+            for i in 0..values_b.len() - 1 {
+                let p1 = values_b.get(i).unwrap_or(&(0.0, 0.0));
+                let p2 = values_b.get(i + 1).unwrap_or(&(0.0, 100.0));
+                ctx.draw(&Line {
+                    x1: p1.0,
+                    y1: p1.1,
+                    x2: p2.0,
+                    y2: p2.1,
+                    color: Color::Cyan,
+                });
+            }
         })
         .x_bounds([0.0, 100.0])
-        .y_bounds([-1.0, 1.0])
+        .y_bounds([-1.1, 1.1])
 }
 
 fn make_status_bar(app: &App) -> impl Widget + 'static {
