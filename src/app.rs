@@ -156,7 +156,7 @@ impl App {
             }
             Parameter::Waveform => {
                 let waveform =
-                    *self.waveform_previews[self.selected_waveform].waveform_type() as u8;
+                    *self.waveform_previews[self.selected_waveform].waveform_type() as usize;
                 if let Ok(wave) = (waveform + 1).try_into() {
                     self.waveform_previews[self.selected_waveform].set_waveform_type(wave);
                 }
@@ -174,7 +174,7 @@ impl App {
                 self.waveform_previews[self.selected_waveform].set_amplitude(value);
             }
             Parameter::Waveform => {
-                if let Ok(waveform) = (value as u8).try_into() {
+                if let Ok(waveform) = (value as usize - 1).try_into() {
                     self.waveform_previews[self.selected_waveform].set_waveform_type(waveform);
                 }
             }
@@ -236,6 +236,8 @@ impl App {
                     } else {
                         self.set_warning("Invalid frequency");
                     }
+                } else {
+                    self.set_warning("No parameter");
                 }
             }
             "a" | "amp" | "amplitude" => {
@@ -245,6 +247,8 @@ impl App {
                     } else {
                         self.set_warning("Invalid amplitude");
                     }
+                } else {
+                    self.set_warning("No parameter");
                 }
             }
             "w" | "wave" | "waveform" => {
@@ -273,6 +277,8 @@ impl App {
                             }
                         }
                     }
+                } else {
+                    self.set_warning("No parameter");
                 }
             }
             _ => {
