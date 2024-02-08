@@ -103,8 +103,6 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         vec!["Amplitude:", amplitude.as_str()],
         vec!["Phase offset:", phase_offset.as_str()],
         vec!["DC offset:", dc_offset.as_str()],
-        vec!["Burst:", "off"],
-        vec!["Burst count:", "1"],
         vec!["Pan:", "0.0"],
     ];
     frame.render_stateful_widget(
@@ -126,7 +124,9 @@ fn make_parameter_table<'a>(
     parameters: Vec<Vec<&'a str>>,
     tab_color: Color,
 ) -> impl StatefulWidget<State = TableState> + 'a {
-    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
+    let selected_style = Style::default()
+        .fg(tab_color)
+        .add_modifier(Modifier::REVERSED);
 
     let rows = parameters.iter().map(|item| {
         let cells = item.iter().map(|c| Cell::from(*c));
