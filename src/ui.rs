@@ -204,9 +204,11 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
             ctx.print(0.0, 1.0, "+1.0".dark_gray());
 
             // draw the waveforms
+            let mut p1;
+            let mut p2;
             for i in 0..values_a.len() - 1 {
-                let p1 = values_a.get(i).unwrap_or(&(0.0, 0.0));
-                let p2 = values_a.get(i + 1).unwrap_or(&(0.0, 100.0));
+                p1 = values_a.get(i).unwrap_or(&(0.0, 0.0));
+                p2 = values_a.get(i + 1).unwrap_or(&(0.0, 100.0));
                 ctx.draw(&Line {
                     x1: p1.0,
                     y1: p1.1,
@@ -216,8 +218,8 @@ fn make_preview_canvas(app: &mut App) -> impl Widget + 'static {
                 });
             }
             for i in 0..values_b.len() - 1 {
-                let p1 = values_b.get(i).unwrap_or(&(0.0, 0.0));
-                let p2 = values_b.get(i + 1).unwrap_or(&(0.0, 100.0));
+                p1 = values_b.get(i).unwrap_or(&(0.0, 0.0));
+                p2 = values_b.get(i + 1).unwrap_or(&(0.0, 100.0));
                 ctx.draw(&Line {
                     x1: p1.0,
                     y1: p1.1,
