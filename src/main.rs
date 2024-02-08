@@ -1,5 +1,6 @@
 mod app;
 mod event;
+mod parameter;
 mod tui;
 mod ui;
 mod update;

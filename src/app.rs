@@ -1,5 +1,6 @@
 use ratatui::widgets::TableState;
 use waveforms_rs::Waveform;
+use crate::parameter::Parameter;
 
 /// Application state
 const WAVEFORMS_COUNT: usize = 2;
@@ -22,53 +23,6 @@ pub struct App {
     // waveform preview generators for each channel
     pub waveform_previews: Vec<Waveform>,
     pub selected_waveform: usize,
-}
-
-#[derive(Default, Debug, Copy, Clone, PartialEq, PartialOrd)]
-pub enum Parameter {
-    #[default]
-    Frequency,
-    Amplitude,
-    Waveform,
-    PhaseOffset,
-    DcOffset,
-    Pan,
-}
-
-impl TryFrom<usize> for Parameter {
-    type Error = ();
-    fn try_from(value: usize) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(Parameter::Frequency),
-            1 => Ok(Parameter::Amplitude),
-            2 => Ok(Parameter::Waveform),
-            3 => Ok(Parameter::PhaseOffset),
-            4 => Ok(Parameter::DcOffset),
-            5 => Ok(Parameter::Pan),
-            _ => Err(()),
-        }
-    }
-}
-
-impl Parameter {
-    fn count() -> usize {
-        6
-    }
-
-    fn next(&self) -> Self {
-        let value = (*self as usize + 1 ) % Self::count();
-        value.try_into().unwrap_or_default()
-    }
-
-    fn previous(&self) -> Self {
-        let mut value = *self as usize;
-        if value > 0 {
-            value = value - 1;
-        } else {
-            value = Self::count() - 1;
-        }
-        value.try_into().unwrap_or_default()
-    }
 }
 
 #[derive(Default, Debug, PartialEq)]
