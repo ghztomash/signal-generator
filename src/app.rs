@@ -1,4 +1,4 @@
-use ratatui::widgets::ListState;
+use ratatui::widgets::TableState;
 use waveforms_rs::Waveform;
 
 /// Application state
@@ -11,7 +11,7 @@ pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
     pub selected_parameter: Parameter,
-    pub list_state: ListState,
+    pub table_state: TableState,
     pub mode: Mode,
 
     pub command: String,
@@ -24,7 +24,7 @@ pub struct App {
     pub selected_waveform: usize,
 }
 
-#[derive(Default, Debug, PartialEq, PartialOrd)]
+#[derive(Default, Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub enum Parameter {
     #[default]
     Frequency,
@@ -77,6 +77,8 @@ impl App {
         for _ in 0..WAVEFORMS_COUNT {
             waveform_previews.push(Waveform::default());
         }
+        let mut table_state = TableState::default();
+        table_state.select(Some(0));
         Self {
             should_quit: false,
             tab_index: 0,
@@ -88,7 +90,7 @@ impl App {
             command_history: vec!["".to_string()],
             command_history_index: 0,
             warning: None,
-            list_state: ListState::default(),
+            table_state,
         }
     }
 
@@ -121,10 +123,14 @@ impl App {
 
     pub fn next_parameter(&mut self) {
         self.selected_parameter = self.selected_parameter.next();
+        let value = self.selected_parameter as usize;
+        self.table_state.select(Some(value));
     }
 
     pub fn previous_parameter(&mut self) {
         self.selected_parameter = self.selected_parameter.previous();
+        let value = self.selected_parameter as usize;
+        self.table_state.select(Some(value));
     }
 
     pub fn increase_parameter_value(&mut self, parameter: Parameter) {

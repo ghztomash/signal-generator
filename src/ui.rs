@@ -78,40 +78,40 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_widget(make_preview_canvas(app), main_sub_area[1]);
 
     let waveform = format!(
-        "Waveform: {}",
+        "{}",
         app.waveform_previews[app.selected_waveform].waveform_type()
     );
     let frequency = format!(
-        "Frequency: {:.2} Hz",
+        "{:.2} Hz",
         app.waveform_previews[app.selected_waveform].frequency()
     );
     let amplitude = format!(
-        "Amplitude: {:.2}",
+        "{:.2}",
         app.waveform_previews[app.selected_waveform].amplitude()
     );
     let phase_offset = format!(
-        "Phase offset: {:.2}",
+        "{:.2}",
         app.waveform_previews[app.selected_waveform].phase_offset()
     );
     let dc_offset = format!(
-        "DC offset: {:.2}",
+        "{:.2}",
         app.waveform_previews[app.selected_waveform].dc_offset()
     );
     let parameters = vec![
-        waveform.as_str(),
-        frequency.as_str(),
-        amplitude.as_str(),
-        phase_offset.as_str(),
-        dc_offset.as_str(),
+        vec!["Waveform:", waveform.as_str()],
+        vec!["Frequency:", frequency.as_str()],
+        vec!["Amplitude:", amplitude.as_str()],
+        vec!["Phase offset:", phase_offset.as_str()],
+        vec!["DC offset:", dc_offset.as_str()],
+        vec!["Burst:", "off"],
+        vec!["Burst count:", "1"],
+        vec!["Pan:", "0.0"],
     ];
     frame.render_stateful_widget(
-        make_parameter_list(parameters, tab_color),
+        make_parameter_table(parameters, tab_color),
         tab_area[0],
-        &mut app.list_state,
+        &mut app.table_state,
     );
-
-    // frame.render_widget(make_line_gauge(25.00), tab_area[1]);
-    // frame.render_widget(make_gauge(25.00), tab_area[2]);
 
     frame.render_widget(make_status_bar(app), tab_area[1]);
 
@@ -122,26 +122,28 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     }
 }
 
-fn make_parameter_list<'a>(
-    parameters: Vec<&'a str>,
+fn make_parameter_table<'a>(
+    parameters: Vec<Vec<&'a str>>,
     tab_color: Color,
-) -> impl StatefulWidget<State = ListState> + 'a {
+) -> impl StatefulWidget<State = TableState> + 'a {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
-    let normal_style = Style::default();
 
-    let items = parameters
-        .iter()
-        .map(|item| ListItem::new(*item).style(normal_style));
+    let rows = parameters.iter().map(|item| {
+        let cells = item.iter().map(|c| Cell::from(*c));
+        Row::new(cells)
+    });
 
-    List::new(items)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_type(BorderType::Thick)
-                .border_style(Style::default().fg(tab_color)),
-        )
-        .highlight_style(selected_style)
-        .highlight_symbol(">> ")
+    Table::new(
+        rows,
+        [Constraint::Percentage(50), Constraint::Percentage(50)],
+    )
+    .block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Thick)
+            .border_style(Style::default().fg(tab_color)),
+    )
+    .highlight_style(selected_style)
 }
 
 fn make_help_popup(app: &App) -> impl Widget + 'static {
@@ -256,29 +258,6 @@ fn make_status_bar(app: &App) -> impl Widget + 'static {
         )
         .style(Style::default().fg(status_color))
         .alignment(Alignment::Left)
-}
-
-fn make_line_gauge(percent: f64) -> impl Widget + 'static {
-    let label = if percent < 100.0 {
-        format!("Downloading: {}%", percent)
-    } else {
-        "Download Complete!".into()
-    };
-    LineGauge::default()
-        .ratio(percent / 100.0)
-        .label(label)
-        .style(Style::new().light_blue())
-        .gauge_style(Style::new().fg(Color::Red))
-        .line_set(symbols::line::THICK)
-}
-
-fn make_gauge(percent: f64) -> impl Widget + 'static {
-    let label = { format!("Amplitude: {}%", percent) };
-    Gauge::default()
-        .ratio(percent / 100.0)
-        .label(label)
-        .style(Style::new().light_blue())
-        .gauge_style(Style::new().fg(Color::Red))
 }
 
 /// helper function to create a centered rect using up certain percentage of the available rect `r`

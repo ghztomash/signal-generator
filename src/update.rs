@@ -3,7 +3,9 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn update(app: &mut App, key_event: KeyEvent) {
     // ignore key repeat events
-    if key_event.kind == crossterm::event::KeyEventKind::Repeat {
+    if key_event.kind == crossterm::event::KeyEventKind::Repeat
+        || key_event.kind == crossterm::event::KeyEventKind::Release
+    {
         return;
     }
 
@@ -70,6 +72,9 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
 
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.previous_tab(),
+
+        KeyCode::Down => app.next_parameter(),
+        KeyCode::Up => app.previous_parameter(),
 
         KeyCode::Char(':') => app.set_command_mode(),
         KeyCode::Char('1') => app.set_tab(0),
