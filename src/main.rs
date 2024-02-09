@@ -23,6 +23,8 @@ fn main() -> Result<()> {
     let events = EventHandler::new(125);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
+    app.create_stream();
+    app.start_stream();
 
     // Start the main loop
     while !app.should_quit {
@@ -40,5 +42,6 @@ fn main() -> Result<()> {
 
     // Exit the terminal
     tui.exit()?;
+    app.stop_stream();
     Ok(())
 }
