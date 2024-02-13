@@ -19,17 +19,15 @@ waveforms-rs = {path = '../waveforms-rs'}
 ratatui = "0.25.0"
 crossterm = "0.27.0"
 color-eyre = "0.6.2"
+cpal = {version = "0.12"}
 
 [features]
-default = ["cpal"]
-pulse = ["pulseaudio-simple-device"]
-cpal = ["dep:cpal"]
+pulseaudio = ["pulseaudio-simple-device"]
 
 [target.'cfg(android)'.dependencies]
 pulseaudio-simple-device = {path = "../pulseaudio-simple-device", optional = true}
 
 [target.'cfg(macos)'.dependencies]
-cpal = {version = "0.12", optional = true}
 
 # The development profile, used for `cargo build`
 [profile.dev]

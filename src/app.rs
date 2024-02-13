@@ -9,7 +9,7 @@ pub const WAVEFORMS_COUNT: usize = 2;
 const TAB_COUNT: usize = 3;
 pub const TAB_TITLES: [&str; 3] = ["Channel A", "Channel B", "Output"];
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct App {
     pub should_quit: bool,
     pub tab_index: usize,
@@ -130,13 +130,25 @@ impl App {
         match parameter {
             Parameter::Frequency => {
                 self.waveform_previews[self.selected_waveform].set_frequency(value);
+                // update audio thread waveforms
+                let audio_waveforms = Arc::clone(&self.audio.waveforms);
+                let mut waveforms = audio_waveforms.lock().unwrap();
+                waveforms[self.selected_waveform].set_frequency(value);
             }
             Parameter::Amplitude => {
                 self.waveform_previews[self.selected_waveform].set_amplitude(value);
+                // update audio thread waveforms
+                let audio_waveforms = Arc::clone(&self.audio.waveforms);
+                let mut waveforms = audio_waveforms.lock().unwrap();
+                waveforms[self.selected_waveform].set_amplitude(value);
             }
             Parameter::Waveform => {
                 if let Ok(waveform) = (value as usize - 1).try_into() {
                     self.waveform_previews[self.selected_waveform].set_waveform_type(waveform);
+                    // update audio thread waveforms
+                    let audio_waveforms = Arc::clone(&self.audio.waveforms);
+                    let mut waveforms = audio_waveforms.lock().unwrap();
+                    waveforms[self.selected_waveform].set_waveform_type(waveform);
                 }
             }
             _ => {self.set_warning("Parameter not implemented");}
