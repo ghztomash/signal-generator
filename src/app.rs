@@ -2,12 +2,10 @@ use ratatui::widgets::TableState;
 use waveforms_rs::Waveform;
 use crate::parameter::Parameter;
 use std::sync::{Arc, Mutex};
-
-extern crate pulseaudio_simple_device as pulse;
-use pulse::{config::Config, device::Device, stream::Stream};
+use crate::audio::AudioStream;
 
 /// Application state
-const WAVEFORMS_COUNT: usize = 2;
+pub const WAVEFORMS_COUNT: usize = 2;
 const TAB_COUNT: usize = 3;
 pub const TAB_TITLES: [&str; 3] = ["Channel A", "Channel B", "Output"];
 
@@ -26,9 +24,8 @@ pub struct App {
     pub warning: Option<String>,
     // waveform preview generators for each channel
     pub waveform_previews: Vec<Waveform>,
-    pub waveforms: Vec<Waveform>,
     pub selected_waveform: usize,
-    stream: Option<Stream>
+    pub audio: AudioStream,
 }
 
 #[derive(Default, Debug, PartialEq)]
@@ -58,13 +55,12 @@ impl App {
             mode: Mode::Normal,
             command: String::new(),
             waveform_previews,
-            waveforms: Vec::new(),
             selected_waveform: 0,
             command_history: vec!["".to_string()],
             command_history_index: 0,
             warning: None,
             table_state,
-            stream: None,
+            audio: AudioStream::default(),
         }
     }
 
@@ -283,51 +279,6 @@ impl App {
 
     pub fn clear_warning(&mut self) {
         self.warning = None;
-    }
-
-    pub fn create_stream(&mut self) {
-        let config = Config::default();
-        let device = Device::new(env!("CARGO_PKG_NAME").to_string());
-
-        let channels = config.channels as usize;
-        let sample_rate = config.sample_rate as f32;
-
-        // Create audio thread waveforms
-        let mut waveforms: Vec<Waveform> = Vec::new();
-        for _ in 0..WAVEFORMS_COUNT {
-            waveforms.push(Waveform::new(sample_rate, 440.0));
-        }
-        let waveforms = Arc::new(Mutex::new(waveforms));
-        let thread_waveforms = Arc::clone(&waveforms);
-
-        // callbacks
-        let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
-
-        let data_fn = move |data: &mut [f32]| {
-            for frame in data.chunks_mut(channels) {
-                let mut waveforms = thread_waveforms.lock().unwrap();
-                // copy the same value to all channels
-                let value = waveforms[0].process();
-                for sample in frame {
-                    *sample = value;
-                }
-            }
-        };
-
-        self.stream = device.build_output_stream(&config, data_fn, err_fn).ok();
-    }
-    
-    pub fn start_stream(&mut self) {
-        if let Some(stream) = &self.stream {
-            stream.play().unwrap();
-        }
-    }
-
-    pub fn stop_stream(&mut self) {
-        if let Some(stream) = &self.stream {
-            stream.pause().unwrap();
-            self.stream = None;
-        }
     }
 }
 
