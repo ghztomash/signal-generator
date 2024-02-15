@@ -19,10 +19,12 @@ waveforms-rs = {path = '../waveforms-rs'}
 ratatui = "0.25.0"
 crossterm = "0.27.0"
 color-eyre = "0.6.2"
-cpal = {version = "0.12"}
+cpal = {version = "0.15", optional = true}
 
 [features]
-pulseaudio = ["pulseaudio-simple-device"]
+default = ["cpal"]
+pulse = ["dep:pulseaudio-simple-device"]
+cpal = ["dep:cpal"]
 
 [target.'cfg(android)'.dependencies]
 pulseaudio-simple-device = {path = "../pulseaudio-simple-device", optional = true}
