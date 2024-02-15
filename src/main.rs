@@ -24,8 +24,8 @@ fn main() -> Result<()> {
     let events = EventHandler::new(125);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
-    app.audio.create_stream();
-    app.audio.start_stream();
+    app.audio.create_stream()?;
+    app.audio.start_stream()?;
 
     // Start the main loop
     while !app.should_quit {
@@ -43,6 +43,6 @@ fn main() -> Result<()> {
 
     // Exit the terminal
     tui.exit()?;
-    app.audio.stop_stream();
+    app.audio.stop_stream()?;
     Ok(())
 }

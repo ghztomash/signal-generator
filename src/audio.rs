@@ -1,15 +1,17 @@
 use crate::app::WAVEFORMS_COUNT;
 use std::sync::{Arc, Mutex};
 use waveforms_rs::Waveform;
+use color_eyre::eyre::{Result, OptionExt};
 
 #[cfg(feature = "pulse")]
 extern crate pulseaudio_simple_device as pulse;
 #[cfg(feature = "pulse")]
 use pulse::{config::Config, device::Device, stream::Stream};
 
+#[cfg(feature = "cpal")]
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
-    Stream,
+    Stream, Device, StreamConfig
 };
 
 #[derive(Default)]
@@ -19,31 +21,34 @@ pub struct AudioStream {
 }
 
 impl AudioStream {
-    pub fn create_stream(&mut self) {
-        let sample_rate = 44100.0;
+    pub fn create_stream(&mut self) -> Result<()> {
+        let device = self.create_device()?;
+        let config = self.create_config(&device)?;
+        let sample_rate = config.sample_rate.0 as f32;
 
         // Create audio thread waveforms
         let mut waveforms: Vec<Waveform> = Vec::new();
-        for _ in 0..WAVEFORMS_COUNT {
-            waveforms.push(Waveform::new(sample_rate, 440.0));
+        for i in 0..WAVEFORMS_COUNT {
+            waveforms.push(Waveform::new(sample_rate, 440.0 * (i as f32 + 1.0)));
         }
         self.waveforms = Arc::new(Mutex::new(waveforms));
 
-        self.create_stream_cpal();
+        self.create_stream_inner(&device, &config)
     }
 
-    fn create_stream_cpal(&mut self) {
-        let host = cpal::default_host();
-        let device = host
-            .default_output_device()
-            .expect("failed to find a default output device");
+    fn create_device(&self) -> Result<Device> {
+        self.create_device_inner()
+    }
 
-        println!("Output device : {}", device.name().unwrap());
-        let config = device.default_output_config().unwrap();
+    fn create_config(&self, device: &Device) -> Result<StreamConfig> {
+        self.create_config_inner(device)
+    }
+
+    #[cfg(feature = "cpal")]
+    // create stream for cpal
+    fn create_stream_inner(&mut self, device: &Device, config: &StreamConfig) -> Result<()> {
         println!("Default output config : {:?}", config);
-
-        let channels = config.channels() as usize;
-        let sample_rate = config.sample_rate().0 as f32;
+        let channels = config.channels as usize;
 
         // callbacks
         let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
@@ -60,15 +65,47 @@ impl AudioStream {
             }
         };
 
-        self.stream = Some(
-            device
-                .build_output_stream(&config.config(), data_fn, err_fn)
-                .unwrap(),
-        );
+        self.stream = Some(device.build_output_stream(config, data_fn, err_fn, None)?);
+        Ok(())
     }
 
-    #[cfg(feature = "pulse")]
-    fn create_stream_pulse(&mut self) {
+    pub fn start_stream(&mut self) -> Result<()> {
+        if let Some(stream) = &self.stream {
+            stream.play()?;
+        }
+        Ok(())
+    }
+
+    pub fn stop_stream(&mut self) -> Result<()> {
+        if let Some(stream) = &self.stream {
+            stream.pause()?;
+            self.stream = None;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(feature = "cpal")]
+impl AudioStream {
+    fn create_device_inner(&self) -> Result<Device> {
+        let host = cpal::default_host();
+        host.default_output_device().ok_or_eyre("Failed to create a default output device")
+    }
+
+    fn create_config_inner(&self, device: &Device) -> Result<StreamConfig> {
+        Ok(device.default_output_config()?.config())
+    }
+}
+
+#[cfg(feature = "pulse")]
+impl AudioStream {
+    fn create_device_inner(&self) -> Result<Device> {
+        let host = cpal::default_host();
+        host.default_output_device().ok_or_eyre("Failed to create a default output device")
+    }
+
+    // create stream for pulse audio
+    fn create_stream_inner(&mut self) {
         let config = Config::default();
         let device = Device::new(env!("CARGO_PKG_NAME").to_string());
 
@@ -90,18 +127,5 @@ impl AudioStream {
         };
 
         self.stream = device.build_output_stream(&config, data_fn, err_fn).ok();
-    }
-
-    pub fn start_stream(&mut self) {
-        if let Some(stream) = &self.stream {
-            stream.play().unwrap();
-        }
-    }
-
-    pub fn stop_stream(&mut self) {
-        if let Some(stream) = &self.stream {
-            stream.pause().unwrap();
-            self.stream = None;
-        }
     }
 }
