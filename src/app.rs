@@ -1,8 +1,8 @@
-use ratatui::widgets::TableState;
-use waveforms_rs::Waveform;
-use crate::parameter::Parameter;
-use std::sync::{Arc, Mutex};
 use crate::audio::AudioStream;
+use crate::parameter::Parameter;
+use ratatui::widgets::TableState;
+use std::sync::{Arc, Mutex};
+use waveforms_rs::Waveform;
 
 /// Application state
 pub const WAVEFORMS_COUNT: usize = 2;
@@ -41,8 +41,8 @@ impl App {
     pub fn new() -> Self {
         // generate waveform previews
         let mut waveform_previews: Vec<Waveform> = Vec::new();
-        for _ in 0..WAVEFORMS_COUNT {
-            waveform_previews.push(Waveform::default());
+        for i in 0..WAVEFORMS_COUNT {
+            waveform_previews.push(Waveform::new(44100.0, 440.0 * (i as f32 + 1.0)));
         }
 
         let mut table_state = TableState::default();
@@ -122,7 +122,9 @@ impl App {
                     self.waveform_previews[self.selected_waveform].set_waveform_type(wave);
                 }
             }
-            _ => {self.set_warning("Parameter not implemented");}
+            _ => {
+                self.set_warning("Parameter not implemented");
+            }
         }
     }
 
@@ -151,7 +153,9 @@ impl App {
                     waveforms[self.selected_waveform].set_waveform_type(waveform);
                 }
             }
-            _ => {self.set_warning("Parameter not implemented");}
+            _ => {
+                self.set_warning("Parameter not implemented");
+            }
         }
     }
 
