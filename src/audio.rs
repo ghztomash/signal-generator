@@ -44,8 +44,6 @@ impl AudioStream {
         self.create_config_inner(device)
     }
 
-    #[cfg(feature = "cpal")]
-    // create stream for cpal
     fn create_stream_inner(&mut self, device: &Device, config: &StreamConfig) -> Result<()> {
         println!("Default output config : {:?}", config);
         let channels = config.channels as usize;
@@ -54,6 +52,8 @@ impl AudioStream {
         let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
 
         let thread_waveforms = Arc::clone(&self.waveforms);
+
+        #[cfg(feature = "cpal")]
         let data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
             for frame in data.chunks_mut(channels) {
                 let mut waveforms = thread_waveforms.lock().unwrap();
